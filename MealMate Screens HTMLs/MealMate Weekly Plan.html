@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MealMate — This Week's Plan</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { margin: 0; background: #c9c2ba; }
+    body { display: flex; justify-content: center; font-family: 'DM Sans', sans-serif; }
+    #root {
+      position: fixed; top: 0; bottom: 0;
+      left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 390px;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    button { font-family: 'DM Sans', sans-serif; cursor: pointer; border: none; }
+    ::-webkit-scrollbar { display: none; }
+    * { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+// ── Tokens ────────────────────────────────────────────────
+const C = {
+  primary:   { 50:"#f4f7f4",100:"#e4ebe4",200:"#c9d8c9",300:"#a3bda3",400:"#7a9e7a",500:"#5a8a5a",600:"#4a7a4a",700:"#3d633d",800:"#334f33",900:"#2a422a" },
+  secondary: { 50:"#fdf5f0",100:"#fae8dc",200:"#f4cdb5",300:"#edae88",400:"#e08c5a",500:"#d4723e",600:"#bf5c2e",700:"#9e4a27" },
+  neutral:   { 0:"#ffffff",50:"#faf8f6",100:"#f3f0ec",200:"#e8e3dd",300:"#d4cdc4",400:"#b5aca0",500:"#968b7d",600:"#7a6f63",700:"#615851",800:"#4a4340",900:"#352f2d",950:"#1e1b19" },
+};
+const shadow = {
+  sm: "0 1px 3px rgba(53,47,45,0.07), 0 1px 2px rgba(53,47,45,0.04)",
+  md: "0 4px 12px rgba(53,47,45,0.09), 0 2px 4px rgba(53,47,45,0.05)",
+  lg: "0 8px 24px rgba(53,47,45,0.12), 0 4px 8px rgba(53,47,45,0.06)",
+};
+
+// ── Themes ────────────────────────────────────────────────
+const THEMES = {
+  Calm: {
+    appBg: C.neutral[50], headerBg: C.neutral[0],
+    heading: C.neutral[900], subtext: C.neutral[500],
+    cardBg: C.neutral[0], cardBorder: C.neutral[200],
+    cardSelBg: C.primary[50], cardSelBorder: C.primary[500], cardSelText: C.primary[700],
+    cardDimOpacity: 0.42,
+    dayLabelColor: C.neutral[800], dayDateColor: C.neutral[500],
+    dayBg: C.neutral[50], dayBorder: C.neutral[200],
+    tagBg: C.neutral[100], tagBorder: C.neutral[200], tagText: C.neutral[600],
+    tagSelBg: C.primary[100], tagSelBorder: C.primary[200], tagSelText: C.primary[700],
+    ingColor: C.neutral[500], ingStaple: C.primary[600],
+    skipBg: C.neutral[100], skipBorder: C.neutral[200], skipText: C.neutral[500],
+    skipActiveBg: C.neutral[200], skipActiveText: C.neutral[600],
+    refreshColor: C.neutral[400],
+    ctaFrom: C.primary[500], ctaTo: C.primary[600], ctaDisabled: C.neutral[300],
+    ctaShadow: "rgba(74,122,74,0.28)", ctaText: C.neutral[500],
+    progressFill: C.primary[500], progressBg: C.neutral[200],
+    footerBg: C.neutral[0], footerBorder: C.neutral[200],
+    checkmark: C.primary[500],
+    headerBorder: C.neutral[200],
+    weekBadgeBg: C.primary[100], weekBadgeText: C.primary[700],
+    timeColor: C.neutral[500],
+  },
+  Warm: {
+    appBg: "#fdf5f0", headerBg: "#fffaf7",
+    heading: C.neutral[900], subtext: C.neutral[600],
+    cardBg: "#fffaf7", cardBorder: C.secondary[200],
+    cardSelBg: C.secondary[50], cardSelBorder: C.secondary[500], cardSelText: C.secondary[700],
+    cardDimOpacity: 0.4,
+    dayLabelColor: C.neutral[800], dayDateColor: C.neutral[500],
+    dayBg: "#fffaf7", dayBorder: C.secondary[200],
+    tagBg: C.secondary[50], tagBorder: C.secondary[200], tagText: C.secondary[700],
+    tagSelBg: C.secondary[100], tagSelBorder: C.secondary[300], tagSelText: C.secondary[700],
+    ingColor: C.neutral[500], ingStaple: C.secondary[600],
+    skipBg: C.secondary[50], skipBorder: C.secondary[200], skipText: C.secondary[600],
+    skipActiveBg: C.secondary[100], skipActiveText: C.secondary[700],
+    refreshColor: C.neutral[400],
+    ctaFrom: C.secondary[400], ctaTo: C.secondary[600], ctaDisabled: C.neutral[300],
+    ctaShadow: "rgba(191,92,46,0.28)", ctaText: C.neutral[500],
+    progressFill: C.secondary[500], progressBg: C.neutral[200],
+    footerBg: "#fffaf7", footerBorder: C.secondary[200],
+    checkmark: C.secondary[500],
+    headerBorder: C.secondary[200],
+    weekBadgeBg: C.secondary[100], weekBadgeText: C.secondary[700],
+    timeColor: C.neutral[500],
+  },
+  Bold: {
+    appBg: C.neutral[950], headerBg: "#242019",
+    heading: "#f3f0ec", subtext: C.neutral[400],
+    cardBg: "#2a2520", cardBorder: "#4a433d",
+    cardSelBg: "#1e2e1e", cardSelBorder: C.primary[500], cardSelText: C.primary[400],
+    cardDimOpacity: 0.35,
+    dayLabelColor: "#e8e3dd", dayDateColor: C.neutral[500],
+    dayBg: "#242019", dayBorder: "#3a342e",
+    tagBg: "#332d28", tagBorder: "#4a433d", tagText: C.neutral[400],
+    tagSelBg: "#2e3a2e", tagSelBorder: C.primary[700], tagSelText: C.primary[400],
+    ingColor: C.neutral[500], ingStaple: C.primary[400],
+    skipBg: "#332d28", skipBorder: "#4a433d", skipText: C.neutral[500],
+    skipActiveBg: "#3a342e", skipActiveText: C.neutral[300],
+    refreshColor: C.neutral[600],
+    ctaFrom: C.primary[400], ctaTo: C.primary[600], ctaDisabled: "#3a342e",
+    ctaShadow: "rgba(90,138,90,0.35)", ctaText: C.neutral[600],
+    progressFill: C.primary[400], progressBg: "#3a342e",
+    footerBg: "#1e1b19", footerBorder: "#3a342e",
+    checkmark: C.primary[400],
+    headerBorder: "#3a342e",
+    weekBadgeBg: "#2e3a2e", weekBadgeText: C.primary[400],
+    timeColor: C.neutral[500],
+  },
+};
+
+// ── Plan data ─────────────────────────────────────────────
+const PLAN = [
+  {
+    day: "Monday", date: "Apr 28",
+    options: [
+      { id:"a", title:"Honey Garlic Salmon", time:"30 min", tags:["Sheet pan","High protein","Quick"], ingredients:["salmon","honey","garlic","broccoli"], staples:["honey","garlic"] },
+      { id:"b", title:"Chicken Stir Fry", time:"25 min", tags:["One-pan","Quick","Kid-friendly"], ingredients:["chicken","soy sauce","peppers","rice"], staples:["soy sauce","rice"] },
+    ],
+  },
+  {
+    day: "Tuesday", date: "Apr 29",
+    options: [
+      { id:"a", title:"Turkey Taco Bowls", time:"30 min", tags:["Quick","Kid-friendly"], ingredients:["ground turkey","black beans","corn","lime"], staples:["black beans","corn"] },
+      { id:"b", title:"Shrimp Fried Rice", time:"25 min", tags:["One-pan","Quick"], ingredients:["shrimp","eggs","rice","soy sauce"], staples:["eggs","rice","soy sauce"] },
+    ],
+  },
+  {
+    day: "Wednesday", date: "Apr 30",
+    options: [
+      { id:"a", title:"Slow Cooker Pot Roast", time:"6 hr", tags:["Hands-off","Meal prep"], ingredients:["beef chuck","potatoes","carrots","onion"], staples:[] },
+      { id:"b", title:"Sheet Pan Chicken Thighs", time:"45 min", tags:["Sheet pan","Kid-friendly"], ingredients:["chicken thighs","lemon","garlic","herbs"], staples:["garlic"] },
+    ],
+  },
+  {
+    day: "Thursday", date: "May 1",
+    options: [
+      { id:"a", title:"Pasta Primavera", time:"30 min", tags:["Quick","Vegetarian"], ingredients:["pasta","zucchini","tomatoes","parmesan"], staples:["pasta","parmesan"] },
+      { id:"b", title:"Beef & Broccoli", time:"25 min", tags:["One-pan","High protein"], ingredients:["beef","broccoli","soy sauce","garlic"], staples:["soy sauce","garlic"] },
+    ],
+  },
+  {
+    day: "Friday", date: "May 2",
+    options: [
+      { id:"a", title:"Baked Salmon & Asparagus", time:"25 min", tags:["Sheet pan","Heart healthy"], ingredients:["salmon","asparagus","lemon","olive oil"], staples:["olive oil"] },
+      { id:"b", title:"Chicken Tikka Masala", time:"45 min", tags:["Meal prep"], ingredients:["chicken","tomatoes","coconut milk","spices"], staples:["coconut milk"] },
+    ],
+  },
+  {
+    day: "Saturday", date: "May 3",
+    options: [
+      { id:"a", title:"Dutch Oven Chicken & Dumplings", time:"65 min", tags:["Comfort","Meal prep"], ingredients:["chicken","carrots","herbs","flour"], staples:["flour"] },
+      { id:"b", title:"Vegetable Green Curry", time:"35 min", tags:["One-pot","Vegetarian"], ingredients:["chickpeas","spinach","coconut milk","rice"], staples:["coconut milk","rice"] },
+    ],
+  },
+  {
+    day: "Sunday", date: "May 4",
+    options: [
+      { id:"a", title:"Lemon Herb Roast Chicken", time:"80 min", tags:["Weekend project"], ingredients:["whole chicken","lemon","garlic","butter"], staples:["garlic","butter"] },
+      { id:"b", title:"Black Bean Enchiladas", time:"45 min", tags:["Vegetarian","Kid-friendly"], ingredients:["black beans","tortillas","cheese","salsa"], staples:["black beans"] },
+    ],
+  },
+];
+
+// Pre-populated selections: a=optionA, b=optionB, skip=skipped, null=none
+const INIT_SELECTIONS = { 0:"a", 1:"b", 2:null, 3:null, 4:"a", 5:"skip", 6:null };
+
+// ── Icons ─────────────────────────────────────────────────
+function IconRefresh({ color }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </svg>
+  );
+}
+function IconCheck({ size=11, color="#fff" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 6L9 17l-5-5"/>
+    </svg>
+  );
+}
+function IconSkip({ color }) {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><path d="M8 12h8M16 12l-4-4M16 12l-4 4"/>
+    </svg>
+  );
+}
+function IconSparkle() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+    </svg>
+  );
+}
+function IconChevronRight({ color, size=12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18l6-6-6-6"/>
+    </svg>
+  );
+}
+
+// ── Recipe card ───────────────────────────────────────────
+function RecipeCard({ recipe, state, onSelect, t }) {
+  // state: 'selected' | 'dimmed' | 'neutral'
+  const [pressed, setPressed] = React.useState(false);
+  const isSelected = state === "selected";
+  const isDimmed   = state === "dimmed";
+
+  return (
+    <button
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={() => { setPressed(false); onSelect(); }}
+      onPointerLeave={() => setPressed(false)}
+      style={{
+        flex:1,
+        display:"flex", flexDirection:"column", gap:8,
+        padding:"12px 11px 11px",
+        background: isSelected ? t.cardSelBg : t.cardBg,
+        border:`2px solid ${isSelected ? t.cardSelBorder : t.cardBorder}`,
+        borderRadius:14,
+        cursor:"pointer", textAlign:"left",
+        opacity: isDimmed ? t.cardDimOpacity : 1,
+        boxShadow: isSelected ? shadow.md : shadow.sm,
+        transform: pressed ? "scale(0.97)" : "scale(1)",
+        transition:"all 0.15s ease",
+        position:"relative",
+        overflow:"hidden",
+      }}
+    >
+      {/* Selected check badge */}
+      {isSelected && (
+        <div style={{
+          position:"absolute", top:8, right:8,
+          width:20, height:20, borderRadius:"50%",
+          background: t.checkmark,
+          display:"flex", alignItems:"center", justifyContent:"center",
+        }}>
+          <IconCheck size={10} color="#fff" />
+        </div>
+      )}
+
+      {/* Title */}
+      <span style={{
+        fontSize:"0.875rem", fontWeight:700, lineHeight:1.25,
+        color: isSelected ? t.cardSelText : t.heading,
+        paddingRight: isSelected ? 24 : 0,
+        display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden",
+      }}>
+        {recipe.title}
+      </span>
+
+      {/* Time */}
+      <span style={{ fontSize:"0.75rem", color: t.timeColor, fontWeight:500 }}>
+        ⏱ {recipe.time}
+      </span>
+
+      {/* Tags */}
+      <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
+        {recipe.tags.slice(0,2).map(tag => (
+          <span key={tag} style={{
+            fontSize:"0.6875rem", fontWeight:500,
+            padding:"2px 7px", borderRadius:9999,
+            background: isSelected ? t.tagSelBg : t.tagBg,
+            color: isSelected ? t.tagSelText : t.tagText,
+            border:`1px solid ${isSelected ? t.tagSelBorder : t.tagBorder}`,
+          }}>
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      {/* Ingredients */}
+      <div style={{ display:"flex", flexWrap:"wrap", gap:"2px 6px", marginTop:1 }}>
+        {recipe.ingredients.slice(0,3).map(ing => {
+          const isStaple = recipe.staples.includes(ing);
+          return (
+            <span key={ing} style={{
+              fontSize:"0.6875rem",
+              color: isStaple ? t.ingStaple : t.ingColor,
+              fontWeight: isStaple ? 600 : 400,
+            }}>
+              {isStaple ? "✓ " : ""}{ing}
+            </span>
+          );
+        })}
+      </div>
+    </button>
+  );
+}
+
+// ── Day section ───────────────────────────────────────────
+function DaySection({ dayData, dayIndex, selection, onSelect, onSkip, onRefresh, t }) {
+  const isSkipped = selection === "skip";
+
+  const getCardState = (optId) => {
+    if (!selection || isSkipped) return "neutral";
+    return selection === optId ? "selected" : "dimmed";
+  };
+
+  const isResolved = selection !== null;
+
+  return (
+    <div style={{
+      background: t.dayBg,
+      borderRadius:16,
+      border:`1px solid ${t.dayBorder}`,
+      boxShadow: shadow.sm,
+      padding:"14px 14px 12px",
+      display:"flex", flexDirection:"column", gap:10,
+    }}>
+      {/* Day header */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <div style={{ display:"flex", flexDirection:"column", gap:1 }}>
+            <span style={{ fontSize:"0.9375rem", fontWeight:700, color: t.dayLabelColor, lineHeight:1 }}>
+              {dayData.day}
+            </span>
+            <span style={{ fontSize:"0.75rem", color: t.dayDateColor }}>
+              {dayData.date}
+            </span>
+          </div>
+          {isResolved && !isSkipped && (
+            <span style={{
+              fontSize:"0.6875rem", fontWeight:600, letterSpacing:"0.02em",
+              padding:"2px 8px", borderRadius:9999,
+              background: t.tagSelBg, color: t.tagSelText,
+              border:`1px solid ${t.tagSelBorder}`,
+            }}>
+              ✓ Picked
+            </span>
+          )}
+          {isSkipped && (
+            <span style={{
+              fontSize:"0.6875rem", fontWeight:600,
+              padding:"2px 8px", borderRadius:9999,
+              background: t.skipActiveBg, color: t.skipActiveText,
+              border:`1px solid ${t.dayBorder}`,
+            }}>
+              Skipped
+            </span>
+          )}
+        </div>
+
+        {/* Right controls */}
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          {/* Skip toggle */}
+          <button
+            onClick={onSkip}
+            style={{
+              display:"flex", alignItems:"center", gap:4,
+              padding:"4px 9px", borderRadius:8,
+              background: isSkipped ? t.skipActiveBg : t.skipBg,
+              border:`1px solid ${t.dayBorder}`,
+              fontSize:"0.6875rem", fontWeight:500,
+              color: isSkipped ? t.skipActiveText : t.skipText,
+              transition:"all 0.12s ease",
+            }}
+          >
+            <IconSkip color={isSkipped ? t.skipActiveText : t.skipText}/>
+            Skip
+          </button>
+
+          {/* Refresh */}
+          <button
+            onClick={onRefresh}
+            style={{
+              width:30, height:30, borderRadius:8,
+              display:"flex", alignItems:"center", justifyContent:"center",
+              background: t.skipBg, border:`1px solid ${t.dayBorder}`,
+              transition:"all 0.12s ease",
+            }}
+          >
+            <IconRefresh color={t.refreshColor}/>
+          </button>
+        </div>
+      </div>
+
+      {/* Recipe cards or skipped state */}
+      {isSkipped ? (
+        <div style={{
+          padding:"14px 12px",
+          borderRadius:12, border:`1.5px dashed ${t.dayBorder}`,
+          display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+        }}>
+          <span style={{ fontSize:"0.875rem", color: t.subtext }}>
+            Eating out · leftovers · or nothing 🙂
+          </span>
+        </div>
+      ) : (
+        <div style={{ display:"flex", gap:8 }}>
+          {dayData.options.map(recipe => (
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+              state={getCardState(recipe.id)}
+              onSelect={() => onSelect(recipe.id)}
+              t={t}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Tweak defaults ────────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "mood": "Warm"
+}/*EDITMODE-END*/;
+
+// ── Main App ──────────────────────────────────────────────
+function App() {
+  const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
+  const { mood } = tweaks;
+  const t = THEMES[mood] || THEMES.Warm;
+
+  const [selections, setSelections] = React.useState(INIT_SELECTIONS);
+  const [confirmPressed, setConfirmPressed] = React.useState(false);
+  const [refreshing, setRefreshing] = React.useState({});
+
+  const resolvedCount = Object.values(selections).filter(v => v !== null).length;
+  const allResolved   = resolvedCount === PLAN.length;
+
+  const handleSelect = (dayIndex, optId) => {
+    setSelections(prev => ({
+      ...prev,
+      [dayIndex]: prev[dayIndex] === optId ? null : optId,
+    }));
+  };
+
+  const handleSkip = (dayIndex) => {
+    setSelections(prev => ({
+      ...prev,
+      [dayIndex]: prev[dayIndex] === "skip" ? null : "skip",
+    }));
+  };
+
+  const handleRefresh = (dayIndex) => {
+    setRefreshing(prev => ({ ...prev, [dayIndex]: true }));
+    setTimeout(() => setRefreshing(prev => ({ ...prev, [dayIndex]: false })), 800);
+  };
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", background: t.appBg, fontFamily:"'DM Sans', sans-serif" }}>
+
+      {/* ── Status bar ── */}
+      <div style={{
+        height:36, flexShrink:0, background: t.headerBg,
+        display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 20px",
+        borderBottom:`1px solid ${t.headerBorder}`,
+      }}>
+        <span style={{ fontSize:"0.875rem", fontWeight:600, color: t.heading }}>9:41</span>
+        <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill={C.neutral[500]}>
+            <rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/>
+            <rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="2.5" height="12" rx="1"/>
+          </svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none">
+            <rect x="0.5" y="0.5" width="18" height="10" rx="2.5" stroke={C.neutral[500]} strokeWidth="1"/>
+            <rect x="2" y="2" width="14" height="7" rx="1.5" fill={C.neutral[500]}/>
+            <path d="M20 3.5v4a2 2 0 0 0 0-4z" fill={C.neutral[500]}/>
+          </svg>
+        </div>
+      </div>
+
+      {/* ── Top header ── */}
+      <div style={{
+        flexShrink:0, background: t.headerBg,
+        padding:"10px 20px",
+        borderBottom:`1px solid ${t.headerBorder}`,
+        display:"flex", alignItems:"center", justifyContent:"space-between",
+      }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <h1 style={{ fontSize:"1.0625rem", fontWeight:700, letterSpacing:"-0.02em", color: t.heading, lineHeight:1, whiteSpace:"nowrap" }}>
+            This Week's Plan
+          </h1>
+          <span style={{ fontSize:"0.75rem", color: t.subtext, whiteSpace:"nowrap" }}>Apr 28 – May 4</span>
+        </div>
+        {/* Progress badge + dots */}
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:5 }}>
+          <span style={{ fontSize:"0.75rem", fontWeight:700, padding:"2px 9px", borderRadius:9999, background: t.weekBadgeBg, color: t.weekBadgeText }}>
+            {resolvedCount}/{PLAN.length}
+          </span>
+          <div style={{ display:"flex", gap:3 }}>
+            {PLAN.map((_, i) => (
+              <div key={i} style={{ width:12, height:3, borderRadius:9999, background: selections[i] !== null ? t.progressFill : t.progressBg, transition:"background 0.2s ease" }}/>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Scrollable plan ── */}
+      <div style={{ flex:1, minHeight:0, overflowY:"auto", padding:"14px 14px 20px", display:"flex", flexDirection:"column", gap:10 }}>
+        {PLAN.map((dayData, i) => (
+          <DaySection
+            key={i}
+            dayData={dayData}
+            dayIndex={i}
+            selection={selections[i]}
+            onSelect={(optId) => handleSelect(i, optId)}
+            onSkip={() => handleSkip(i)}
+            onRefresh={() => handleRefresh(i)}
+            t={t}
+          />
+        ))}
+      </div>
+
+      {/* ── Sticky footer ── */}
+      <div style={{
+        flexShrink:0, background: t.footerBg,
+        borderTop:`1px solid ${t.footerBorder}`,
+        padding:"8px 16px 12px",
+      }}>
+        <button
+          onPointerDown={() => allResolved && setConfirmPressed(true)}
+          onPointerUp={() => setConfirmPressed(false)}
+          onPointerLeave={() => setConfirmPressed(false)}
+          style={{
+            width:"100%", height:46, borderRadius:12,
+            background: allResolved
+              ? (confirmPressed ? t.ctaFrom : `linear-gradient(160deg, ${t.ctaFrom} 0%, ${t.ctaTo} 100%)`)
+              : t.ctaDisabled,
+            color: allResolved ? "#fff" : t.ctaText,
+            fontSize:"0.9375rem", fontWeight:600,
+            border:"none",
+            cursor: allResolved ? "pointer" : "default",
+            display:"flex", alignItems:"center", justifyContent:"center", gap:7,
+            boxShadow: allResolved && !confirmPressed ? `0 6px 20px ${t.ctaShadow}, ${shadow.md}` : "none",
+            transform: confirmPressed ? "scale(0.985)" : "scale(1)",
+            transition:"all 0.12s ease",
+            letterSpacing:"-0.01em",
+          }}
+        >
+          {allResolved
+            ? <><IconSparkle /> Confirm Plan &amp; Build Grocery List</>
+            : `Pick ${PLAN.length - resolvedCount} more day${PLAN.length - resolvedCount !== 1 ? "s" : ""} to continue`
+          }
+        </button>
+      </div>
+
+      {/* ── Tweaks ── */}
+      <TweaksPanel>
+        <TweakSection label="Mood" />
+        <TweakRadio options={["Calm","Warm","Bold"]} value={mood} onChange={v => setTweak("mood", v)} />
+      </TweaksPanel>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

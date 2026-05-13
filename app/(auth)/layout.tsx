@@ -1,0 +1,12 @@
+import { tokens } from "@/lib/tokens";
+
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="min-h-full flex flex-col items-center justify-center px-5 py-12"
+      style={{ background: tokens.colors.neutral[50] }}
+    >
+      <div className="w-full max-w-sm">{children}</div>
+    </div>
+  );
+}
