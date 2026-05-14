@@ -108,30 +108,34 @@ export default function SignInPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit}>
         {error && <ErrorBanner message={error} />}
 
-        <TextInput
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          required
-          autoComplete="email"
-        />
+        <div style={{ marginBottom: 16 }}>
+          <TextInput
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            required
+            autoComplete="email"
+          />
+        </div>
 
         {mode !== "magic" && (
-          <TextInput
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-            autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            helperText={mode === "signup" ? "At least 8 characters" : undefined}
-          />
+          <div style={{ marginBottom: 24 }}>
+            <TextInput
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              helperText={mode === "signup" ? "At least 8 characters" : undefined}
+            />
+          </div>
         )}
 
         <Button type="submit" variant="primary" fullWidth disabled={loading}>
