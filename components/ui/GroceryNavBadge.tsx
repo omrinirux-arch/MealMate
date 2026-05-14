@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { tokens } from "@/lib/tokens";
 
 export function GroceryNavBadge() {
   const [checked, setChecked] = useState(0);
   const [total, setTotal] = useState(0);
+  const pathname = usePathname();
 
   useEffect(() => {
     const supabase = createClient();
@@ -58,7 +60,7 @@ export function GroceryNavBadge() {
     fetchCounts();
     window.addEventListener("groceryItemsChanged", fetchCounts);
     return () => window.removeEventListener("groceryItemsChanged", fetchCounts);
-  }, []);
+  }, [pathname]);
 
   if (total === 0) return null;
 
