@@ -109,7 +109,7 @@ function buildUserMessage(ctx: {
   recent_recipe_titles: string[];
   thumbs_down_titles: string[];
   thumbs_up_titles: string[];
-}): string {
+}, numDays: number): string {
   const list = (arr: string[], fallback = "none") =>
     arr.length > 0 ? arr.join(", ") : fallback;
 
@@ -127,7 +127,7 @@ function buildUserMessage(ctx: {
     `thumbs_down_recipes (never suggest again, avoid similar): ${list(ctx.thumbs_down_titles)}`,
     `thumbs_up_recipes (loved these, favor similar style/cuisine): ${list(ctx.thumbs_up_titles)}`,
     "",
-    "Generate exactly 14 dinner recipes as a JSON array.",
+    `Generate exactly ${numDays * 2} dinner recipes as a JSON array.`,
   ].join("\n");
 }
 
@@ -318,7 +318,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         const targetCount = numDays * 2;
         send({ type: "progress", step: "searching" });
 
-        let recipes = await callClaude(systemPrompt, buildUserMessage(ctx)).catch((err) => {
+        let recipes = await callClaude(systemPrompt, buildUserMessage(ctx, numDays)).catch((err) => {
           console.error("[generate-plan] Claude call #1 failed:", err);
           return [] as ValidatedRecipe[];
         });
@@ -346,7 +346,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           send({ type: "progress", step: "topup" });
 
           const topUpMessage = [
-            buildUserMessage(ctx),
+            buildUserMessage(ctx, numDays),
             "",
             `You already generated these titles — DO NOT repeat them: ${recipes.map((r) => r.title).join(", ")}`,
             `I need exactly ${needed} more unique dinner recipes. Return ONLY a JSON array of ${needed} recipe objects.`,

@@ -154,7 +154,6 @@ function GeneratingContent() {
         const dayRows: { meal_plan_id: string; day_index: number; option_a: unknown; option_b: unknown }[] = [];
         for (let i = 0; i < daysCount; i++) {
           const dayIndex = startDayIndex + i;
-          if (dayIndex > 6) break;
           dayRows.push({
             meal_plan_id: planId!,
             day_index: dayIndex,
