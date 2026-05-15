@@ -11,8 +11,8 @@ const anthropic = new Anthropic({
   maxRetries: 2,
 });
 
-const MODEL_PRIMARY = "claude-sonnet-4-6";
-const MODEL_FALLBACK = "claude-haiku-4-5-20251001";
+const MODEL_PRIMARY = "claude-haiku-4-5-20251001";
+const MODEL_FALLBACK = "claude-sonnet-4-6";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -185,7 +185,7 @@ function normalizeTitle(t: string): string {
 async function callModel(model: string, systemPrompt: string, userMessage: string): Promise<ValidatedRecipe[]> {
   const response = await anthropic.messages.create({
     model,
-    max_tokens: 8000,
+    max_tokens: 16000,
     system: systemPrompt,
     messages: [{ role: "user", content: userMessage }],
   });
