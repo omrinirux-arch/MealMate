@@ -216,7 +216,7 @@ async function callClaude(systemPrompt: string, userMessage: string): Promise<Va
 //   { type: "error", message: string }
 
 export async function POST(req: NextRequest): Promise<Response> {
-  let body: { household_id?: string; days?: number };
+  let body: { household_id?: string; days?: number; meal_plan_id?: string };
   try {
     body = await req.json();
   } catch {
@@ -226,7 +226,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     );
   }
 
-  const { household_id } = body;
+  const { household_id, meal_plan_id } = body;
   const numDays = Math.max(1, Math.min(7, Math.round(body.days ?? 7)));
 
   if (!household_id || typeof household_id !== "string") {
@@ -263,11 +263,13 @@ export async function POST(req: NextRequest): Promise<Response> {
         const [staplesRes, onHandRes, toolsRes, prefsRes, ratingsRes, recentRes] =
           await Promise.all([
             supabase.from("staple_items").select("name").eq("household_id", household_id),
-            supabase
-              .from("on_hand_items")
-              .select("name")
-              .eq("household_id", household_id)
-              .is("meal_plan_id", null),
+            meal_plan_id
+              ? supabase
+                  .from("on_hand_items")
+                  .select("name")
+                  .eq("household_id", household_id)
+                  .eq("meal_plan_id", meal_plan_id)
+              : Promise.resolve({ data: [] as { name: string }[] }),
             supabase.from("kitchen_tools").select("name").eq("household_id", household_id),
             supabase
               .from("household_preferences")

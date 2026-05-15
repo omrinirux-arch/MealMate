@@ -100,7 +100,7 @@ function GeneratingContent() {
         const res = await fetch("/api/generate-plan", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ household_id: householdId, days: daysCount }),
+          body: JSON.stringify({ household_id: householdId, days: daysCount, meal_plan_id: planId }),
           signal: ctrl.signal,
         });
 
