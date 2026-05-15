@@ -26,6 +26,7 @@ interface RegenRecipe {
   prep_time: string;
   cook_time: string;
   description: string;
+  preferences_match: string;
   ingredients: string[];
   instructions: string[];
   tags: string[];
@@ -44,6 +45,7 @@ Each recipe object must have exactly these fields:
   "prep_time": string,
   "cook_time": string,
   "description": string,
+  "preferences_match": string,
   "ingredients": string[],
   "instructions": string[],
   "tags": string[],
@@ -55,6 +57,7 @@ Culinary quality (apply to both recipes):
 - Use technique language in steps: "sear until deep golden-brown", "deglaze and scrape up the browned bits", "reduce until slightly thickened", "season and finish with lemon"
 - Each recipe must include at least one finishing touch: citrus squeeze, fresh herbs, good oil drizzle, or toasted seeds
 - description: one sentence, max 200 characters, written like a menu blurb — name the dominant flavor or key technique (e.g. "Crispy-skinned salmon over lemony white beans with wilted spinach and a bright caper dressing.")
+- preferences_match: 1–2 short sentences, max 220 characters, friendly and second-person — explain how THIS specific recipe fits the household's stated preferences. Reference actual dietary_goals, recipe_style, spice_tolerance, exclusions, or on_hand_items by name (e.g. "Hits your heart-healthy goal with omega-3-rich salmon and uses up the lemon you have on hand."). Never invent preferences the household didn't list.
 - instructions: at least 5 plain strings (no "Step 1:" prefix — the UI numbers them); include temps, visual doneness cues, and a finishing/plating note in the last step
 
 Rules:
@@ -123,6 +126,7 @@ function normalize(r: Record<string, unknown>, servings: number): RegenRecipe {
     prep_time: typeof r.prep_time === "string" ? r.prep_time : "",
     cook_time: typeof r.cook_time === "string" ? r.cook_time : "",
     description: typeof r.description === "string" ? r.description.slice(0, 200) : "",
+    preferences_match: typeof r.preferences_match === "string" ? r.preferences_match.trim().slice(0, 220) : "",
     ingredients: (Array.isArray(r.ingredients) ? r.ingredients as unknown[] : [])
       .filter((i): i is string => typeof i === "string" && i.trim().length > 0),
     instructions: (Array.isArray(r.instructions) ? r.instructions as unknown[] : [])
@@ -140,6 +144,7 @@ const PLACEHOLDER: Omit<RegenRecipe, "servings"> = {
   prep_time: "15 min",
   cook_time: "25 min",
   description: "A flexible, easy weeknight dinner.",
+  preferences_match: "",
   ingredients: ["protein of choice", "vegetables", "2 tbsp olive oil", "salt", "pepper"],
   instructions: [
     "Season protein with salt and pepper.",

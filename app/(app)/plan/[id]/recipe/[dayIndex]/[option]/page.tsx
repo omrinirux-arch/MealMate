@@ -20,6 +20,7 @@ interface StoredRecipe {
   prep_time: string;
   cook_time: string;
   description: string;
+  preferences_match?: string;
   ingredients: string[];
   instructions: string[];
   tags: string[];
@@ -176,6 +177,42 @@ export default async function RecipeDetailPage({
             {haveIngredients.length} / {recipe.ingredients.length} on hand
           </span>
         </div>
+
+        {/* Why this fits you — only if blurb exists */}
+        {recipe.preferences_match && (
+          <div
+            style={{
+              marginBottom: 24,
+              padding: "12px 14px",
+              borderRadius: tokens.radius.lg,
+              background: tokens.colors.primary[50],
+              border: `1px solid ${tokens.colors.primary[100]}`,
+            }}
+          >
+            <p
+              style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                color: tokens.colors.primary[700],
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                margin: "0 0 4px",
+              }}
+            >
+              Why this fits you
+            </p>
+            <p
+              style={{
+                fontSize: "13px",
+                color: tokens.colors.primary[700],
+                lineHeight: 1.5,
+                margin: 0,
+              }}
+            >
+              {recipe.preferences_match}
+            </p>
+          </div>
+        )}
 
         {/* Ingredients */}
         <section style={{ marginBottom: 28 }}>

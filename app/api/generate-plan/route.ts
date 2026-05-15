@@ -23,6 +23,7 @@ export interface ValidatedRecipe {
   prep_time: string;
   cook_time: string;
   description: string;
+  preferences_match: string;
   ingredients: string[];
   instructions: string[];
   tags: string[];
@@ -45,6 +46,7 @@ Each recipe object must have exactly these fields:
   "prep_time": string,
   "cook_time": string,
   "description": string,
+  "preferences_match": string,
   "ingredients": string[],
   "instructions": string[],
   "tags": string[],
@@ -65,6 +67,7 @@ Field requirements:
 - prep_time: e.g. "10 min", "20 min"
 - cook_time: e.g. "25 min", "1 hr"
 - description: one sentence, max 200 characters — write it like a menu blurb that makes someone hungry: name the dominant flavor, the key technique, or the most appealing sensory detail (e.g. "Crispy-skinned salmon over lemony white beans with wilted spinach and a bright caper-herb dressing.")
+- preferences_match: 1–2 short sentences, max 220 characters, friendly and second-person — explain how THIS specific recipe fits the household's stated preferences. Reference the actual dietary_goals, recipe_style, spice_tolerance, exclusions, or on_hand_items by name (e.g. "Hits your heart-healthy goal with omega-3-rich salmon and uses up the lemon and spinach you have on hand.", "A quick one-pan dinner that respects your no-dairy exclusion."). Never invent preferences the household didn't list. If no preferences are set, write a brief generic line about the dish's appeal.
 - ingredients: at least 5 items, each a complete ingredient string like "2 tbsp olive oil" or "1 lb boneless chicken thighs"
 - instructions: at least 5 steps as plain strings (no "Step 1:" prefix — the UI numbers them automatically); each step must describe technique, not just actions — include temps, visual cues, timing, and tasting guidance; the final step must include a finishing touch and plating note
 - tags: 2–5 short descriptive tags (e.g. "quick", "one-pan", "high-protein")
@@ -167,6 +170,7 @@ function normalizeRecipe(r: Record<string, unknown>, servings: number): Validate
     prep_time: typeof r.prep_time === "string" ? r.prep_time : "",
     cook_time: typeof r.cook_time === "string" ? r.cook_time : "",
     description: typeof r.description === "string" ? r.description.slice(0, 200) : "",
+    preferences_match: typeof r.preferences_match === "string" ? r.preferences_match.trim().slice(0, 220) : "",
     ingredients: (Array.isArray(r.ingredients) ? r.ingredients as unknown[] : [])
       .filter((i): i is string => typeof i === "string" && i.trim().length > 0),
     instructions: (Array.isArray(r.instructions) ? r.instructions as unknown[] : [])
