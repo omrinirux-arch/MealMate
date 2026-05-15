@@ -71,7 +71,9 @@ export default async function RecipeDetailPage({
     day.selected_option !== "skip" &&
     day.selected_option !== currentOption;
 
-  const dayName = DAY_NAMES[parseInt(dayIndex)] ?? "this day";
+  const dayDate = new Date(plan.week_start + "T12:00:00");
+  dayDate.setDate(dayDate.getDate() + parseInt(dayIndex));
+  const dayName = DAY_NAMES[dayDate.getDay() === 0 ? 6 : dayDate.getDay() - 1] ?? "this day";
 
   const isConfirmed = plan.status === "confirmed";
 
