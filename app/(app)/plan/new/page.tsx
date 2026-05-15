@@ -108,8 +108,14 @@ function PlanNewInner() {
 
     const supabase = createClient();
 
-    if (fromPlanId) {
-      await archiveMealPlan(supabase, fromPlanId);
+    const { data: existingPlans } = await supabase
+      .from("meal_plans")
+      .select("id")
+      .eq("household_id", householdId)
+      .neq("status", "archived");
+
+    for (const p of existingPlans ?? []) {
+      await archiveMealPlan(supabase, p.id);
     }
 
     const startD = new Date();
