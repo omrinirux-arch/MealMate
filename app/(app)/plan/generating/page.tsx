@@ -160,8 +160,13 @@ function GeneratingContent() {
           });
         }
 
+        console.log(`[generating] inserting ${dayRows.length} days for plan ${planId}`, dayRows.map(r => r.day_index));
         const { error: daysErr } = await insertMealPlanDays(supabase, dayRows);
-        if (daysErr) throw new Error(daysErr.message);
+        if (daysErr) {
+          console.error(`[generating] insertMealPlanDays failed:`, daysErr);
+          throw new Error(daysErr.message);
+        }
+        console.log(`[generating] successfully inserted ${dayRows.length} days`);
 
         await linkUnlinkedOnHandItems(supabase, householdId!, planId!);
 
