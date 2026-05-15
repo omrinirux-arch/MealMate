@@ -114,6 +114,7 @@ function GeneratingContent() {
         const decoder = new TextDecoder();
         let buffer = "";
         let recipes: unknown[] = [];
+        let receivedDone = false;
 
         outer: while (true) {
           const { done, value } = await reader.read();
@@ -137,13 +138,20 @@ function GeneratingContent() {
               if (event.step === "searching") setMsgIndex(0);
               else if (event.step === "matching") setMsgIndex(1);
               // "topup" keeps showing "Searching…" (already at 0 from the re-send)
+            } else if (event.type === "heartbeat") {
+              // keep-alive, ignore
             } else if (event.type === "done") {
               recipes = event.recipes ?? [];
+              receivedDone = true;
               break outer;
             } else if (event.type === "error") {
               throw new Error(event.message ?? "Generation failed");
             }
           }
+        }
+
+        if (!receivedDone) {
+          throw new Error("Recipe generation timed out. Please try again.");
         }
 
         // ── Building phase: insert days to DB ────────────────────────────────

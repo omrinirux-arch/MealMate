@@ -201,7 +201,9 @@ export default async function PlanViewPage({ params }: { params: Promise<{ id: s
 
   // Week boundary notice: plan ends before Sunday
   const endsBeforeSunday = lastDayIndex < 6;
-  const boundaryDayName = DAY_NAMES[lastDayIndex] ?? "Sunday";
+  const boundaryDate = new Date(plan.week_start + "T12:00:00");
+  boundaryDate.setDate(boundaryDate.getDate() + lastDayIndex);
+  const boundaryDayName = DAY_NAMES[boundaryDate.getDay() === 0 ? 6 : boundaryDate.getDay() - 1] ?? "Sunday";
 
   // Count days that are resolved (recipe selected OR skipped)
   const selectedCount = days.filter(

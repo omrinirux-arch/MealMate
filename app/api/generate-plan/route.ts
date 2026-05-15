@@ -251,6 +251,8 @@ export async function POST(req: NextRequest): Promise<Response> {
         controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
       }
 
+      let heartbeat: ReturnType<typeof setInterval> | undefined;
+
       try {
         // ── Fetch household context ──────────────────────────────────────────
         const supabase = await createClient();
@@ -320,6 +322,11 @@ export async function POST(req: NextRequest): Promise<Response> {
         const targetCount = numDays * 2;
         send({ type: "progress", step: "searching" });
 
+        // Heartbeat keeps the stream alive while Claude generates (prevents proxy/Vercel idle timeout)
+        heartbeat = setInterval(() => {
+          try { send({ type: "heartbeat" }); } catch { /* stream already closed */ }
+        }, 8000);
+
         let recipes = await callClaude(systemPrompt, buildUserMessage(ctx, numDays)).catch((err) => {
           console.error("[generate-plan] Claude call #1 failed:", err);
           return [] as ValidatedRecipe[];
@@ -368,6 +375,8 @@ export async function POST(req: NextRequest): Promise<Response> {
           }
         }
 
+        clearInterval(heartbeat);
+
         // ── Step 3: Error out if both calls returned nothing ─────────────────
         if (recipes.length === 0) {
           send({ type: "error", message: "Couldn't generate recipes right now — Claude may be briefly overloaded. Please try again in a moment." });
@@ -391,6 +400,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         send({ type: "done", recipes, count: recipes.length });
         controller.close();
       } catch (err) {
+        clearInterval(heartbeat);
         console.error("[generate-plan] Unexpected error:", err);
         send({ type: "error", message: (err as Error).message ?? "Unexpected error" });
         controller.close();

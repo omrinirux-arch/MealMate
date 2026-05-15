@@ -48,7 +48,7 @@ function PlanNewInner() {
 
   const [items, setItems] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [includeToday, setIncludeToday] = useState(false);
+  const [includeToday, setIncludeToday] = useState(true);
   const [daysCount, setDaysCount] = useState(7);
 
   // 0=Mon … 6=Sun
