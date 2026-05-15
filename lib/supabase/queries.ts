@@ -155,6 +155,21 @@ export async function archiveMealPlan(client: Client, planId: string) {
 }
 
 export async function getCurrentMealPlan(client: Client, householdId: string) {
+  // Prefer the most recent confirmed plan — stale drafts with a later
+  // week_start shouldn't shadow a plan the user has actually accepted.
+  const { data: confirmed } = await client
+    .from("meal_plans")
+    .select("*, meal_plan_days(*)")
+    .eq("household_id", householdId)
+    .eq("status", "confirmed")
+    .order("week_start", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (confirmed) return { data: confirmed, error: null };
+
+  // Fall back to the most recent non-archived (draft) plan.
   const { data, error } = await client
     .from("meal_plans")
     .select("*, meal_plan_days(*)")
@@ -163,7 +178,7 @@ export async function getCurrentMealPlan(client: Client, householdId: string) {
     .order("week_start", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   return { data, error };
 }
