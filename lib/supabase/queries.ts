@@ -168,17 +168,10 @@ export async function getCurrentMealPlan(client: Client, householdId: string) {
   return { data, error };
 }
 
-export async function createDraftMealPlan(client: Client, householdId: string) {
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + daysToMonday);
-  const weekStart = monday.toISOString().split("T")[0];
-
+export async function createDraftMealPlan(client: Client, householdId: string, startDate: string) {
   const { data, error } = await client
     .from("meal_plans")
-    .insert({ household_id: householdId, week_start: weekStart, status: "draft" })
+    .insert({ household_id: householdId, week_start: startDate, status: "draft" })
     .select("id")
     .single();
   return { data, error };

@@ -69,7 +69,6 @@ function GeneratingContent() {
   const planId = params.get("planId");
   const householdId = params.get("householdId");
   const daysCount = Math.max(1, Math.min(7, parseInt(params.get("days") ?? "7", 10)));
-  const startDayIndex = Math.max(0, Math.min(6, parseInt(params.get("startDay") ?? "0", 10)));
 
   const [msgIndex, setMsgIndex] = useState(0);
   const [phase, setPhase] = useState<"loading" | "error">("loading");
@@ -153,10 +152,9 @@ function GeneratingContent() {
 
         const dayRows: { meal_plan_id: string; day_index: number; option_a: unknown; option_b: unknown }[] = [];
         for (let i = 0; i < daysCount; i++) {
-          const dayIndex = startDayIndex + i;
           dayRows.push({
             meal_plan_id: planId!,
-            day_index: dayIndex,
+            day_index: i,
             option_a: recipes[i * 2] ?? null,
             option_b: recipes[i * 2 + 1] ?? null,
           });

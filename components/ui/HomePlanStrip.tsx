@@ -50,11 +50,19 @@ export function HomePlanStrip({ planId, weekStart, days, highlights }: Props) {
 
   const dayMap = new Map<number, PlanDay>(days.map((d) => [d.day_index, d]));
 
-  // Build date number for a given day_index
-  function dateForIndex(i: number): number {
+  function dateObjForIndex(i: number): Date {
     const d = new Date(weekStart + "T00:00:00");
     d.setDate(d.getDate() + i);
-    return d.getDate();
+    return d;
+  }
+
+  function dateForIndex(i: number): number {
+    return dateObjForIndex(i).getDate();
+  }
+
+  function dayAbbrForIndex(i: number): string {
+    const jsDay = dateObjForIndex(i).getDay();
+    return DAY_ABBR[jsDay === 0 ? 6 : jsDay - 1];
   }
 
   const selectedDay = dayMap.get(selectedIndex) ?? null;
@@ -133,7 +141,7 @@ export function HomePlanStrip({ planId, weekStart, days, highlights }: Props) {
               }}
             >
               <span style={{ fontSize: "11px", letterSpacing: "0.03em" }}>
-                {DAY_ABBR[i]}
+                {dayAbbrForIndex(i)}
               </span>
               <span style={{ fontSize: "16px" }}>{dateForIndex(i)}</span>
             </button>

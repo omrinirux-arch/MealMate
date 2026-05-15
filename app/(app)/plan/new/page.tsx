@@ -112,7 +112,11 @@ function PlanNewInner() {
       await archiveMealPlan(supabase, fromPlanId);
     }
 
-    const { data: plan, error: planErr } = await createDraftMealPlan(supabase, householdId);
+    const startD = new Date();
+    if (!includeToday) startD.setDate(startD.getDate() + 1);
+    const startDate = startD.toISOString().split("T")[0];
+
+    const { data: plan, error: planErr } = await createDraftMealPlan(supabase, householdId, startDate);
     if (planErr || !plan) {
       setError(planErr?.message ?? "Failed to start plan generation");
       setLoading(false);

@@ -126,7 +126,7 @@ function DaySection({
           alignItems: "center",
           gap: 6,
         }}>
-          {DAY_NAMES[dayIndex]}
+          {DAY_NAMES[date.getDay() === 0 ? 6 : date.getDay() - 1]}
           <span style={{ fontWeight: 400, color: tokens.colors.neutral[400], textTransform: "none", letterSpacing: 0 }}>
             {dateLabel}
           </span>
